@@ -1,10 +1,11 @@
 #include "traceroute.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-static unsigned int parse_traceroute(int argc, char *argv[], t_route *route)
-{
-  for (int i = 1; i < argc; i++)
-  {
+t_route *g_route;
+
+static unsigned int parse_traceroute(int argc, char *argv[], t_route *route) {
+  for (int i = 1; i < argc; i++) {
     if (ft_strncmp(argv[i], "--help", 6) == 0)
       route->options |= HELP_OPTION;
     else
@@ -14,8 +15,7 @@ static unsigned int parse_traceroute(int argc, char *argv[], t_route *route)
   return 0;
 }
 
-int help()
-{
+int help() {
   printf("Usage: traceroute [OPTION...] HOST\n");
   printf("Print the route packets trace to network host.\n");
   printf("\n");
@@ -23,16 +23,21 @@ int help()
   return 0;
 }
 
-int main(int argc, char *argv[])
-{
-  t_route route;
+int main(int argc, char *argv[]) {
 
-  if (parse_traceroute(argc, argv, &route) != 0)
+  if (!(g_route = malloc(sizeof(t_route)))) {
+    fprintf(stderr, "traceroute: malloc failed\n");
     return 1;
+  }
+  ft_memset(g_route, 0, sizeof(t_route));
 
-  if (route.options & HELP_OPTION || argc == 1)
+  if (parse_traceroute(argc, argv, g_route) != 0) {
+    fprintf(stderr, "traceroute: parse failed\n");
+    return 1;
+  }
+
+  if (g_route->options & HELP_OPTION || argc == 1)
     return help();
 
-  printf("Host: %s\n", route.host);
-  return 0;
+  return (traceroute(g_route));
 }

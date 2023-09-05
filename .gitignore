@@ -3,6 +3,9 @@
 
 ft_traceroute
 build/
+.vscode/
+.cache/
+compile_commands.json
 
 ### C ###
 # Prerequisites
