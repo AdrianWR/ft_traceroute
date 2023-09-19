@@ -12,8 +12,8 @@ int address_lookup(t_route *route) {
   char *addr;
 
   hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_DGRAM;
-  hints.ai_protocol = IPPROTO_UDP;
+  hints.ai_socktype = 0;
+  hints.ai_protocol = 0;
   hints.ai_flags = AI_CANONNAME;
 
   if ((status = getaddrinfo(route->host, NULL, &hints, &route->addrinfo))) {

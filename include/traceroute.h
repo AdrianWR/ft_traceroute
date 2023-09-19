@@ -5,6 +5,7 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/udp.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -12,32 +13,61 @@
 // Main binary parsing options
 #define HELP_OPTION 1
 
+#define PROBE_PACKET "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+#define PROBE_PACKET_SIZE 32
+#define PROBE_PACKET_COUNT 3
+#define PROBE_MAX_PACKETS 90
+
+#define DEFAULT_TTL 64
+#define DEFAULT_MAX_HOPS 30
+#define DEFAULT_TIMEOUT 5
+#define DEFAULT_UDP_PORT 33434
+#define DEFAULT_UDP_PAYLOAD_SIZE 32
+#define DEFAULT_UDP_PACKET_SIZE 60
+
+#define PORT_INDEX(i) (i - DEFAULT_UDP_PORT)
+
+typedef struct s_hop {
+  bool sent;
+  bool received;
+  struct timeval start;
+  struct timeval end;
+  char addr[INET_ADDRSTRLEN];
+} t_hop;
+
 typedef struct s_route {
   const char *host;
   unsigned int options;
   struct addrinfo *addrinfo;
   char addr[INET_ADDRSTRLEN];
 
-  int sockfd;
+  int udp_sockfd;
+  int icmp_sockfd;
+  unsigned short udp_port;
+
+  t_hop hops[PROBE_MAX_PACKETS];
+
+  unsigned int ttl;
 } t_route;
 
 typedef struct s_packet {
-  struct iphdr iphdr;
-  union {
-    struct udphdr udphdr;
-    struct icmphdr icmphdr;
-  };
-  char payload[32];
+  char payload[PROBE_PACKET_SIZE];
 } t_packet;
 
 extern t_route *g_route;
 
 int traceroute(t_route *route);
 int address_lookup(t_route *route);
-int init_socket(t_route *route);
-t_packet new_packet(uint8_t ttl, uint32_t src, uint32_t dst);
+int init_icmp_socket(t_route *route);
+int init_udp_socket(t_route *route);
+t_packet new_packet();
 void interrupt_handler(int sig);
 void free_route(t_route *route);
+int send_packets(t_route *route);
+int receive_packets(t_route *route);
+float time_diff_ms(struct timeval *start, struct timeval *end);
+
+void print_hops(t_route *route, t_hop *hops);
 
 size_t ft_strlen(const char *s);
 void *ft_memset(void *b, int c, size_t len);
