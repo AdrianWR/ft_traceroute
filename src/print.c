@@ -1,28 +1,26 @@
 #include "traceroute.h"
+#include <netinet/in.h>
 
 static float get_elapsed_time(t_hop hop) {
   return time_diff_ms(&hop.start, &hop.end);
 }
 
-void print_hops(t_route *route, t_hop *hops) {
-  t_hop *hop;
-  char first_addr[INET_ADDRSTRLEN];
+void print_hop(t_hop *hop) {
+  static char last_addr[INET_ADDRSTRLEN] = {0};
+  static unsigned short last_ttl = 0;
 
-  printf("%2d ", route->ttl);
-  for (unsigned int i = 0; i < 3; i++) {
-    hop = &hops[i];
-
-    if (!hop->received) {
-      printf(" *");
-    } else {
-      if (i == 0) {
-        ft_memcpy(first_addr, hop->addr, sizeof(first_addr));
-        printf(" %s (%s)", hop->addr, hop->addr);
-      }
-      if (ft_strncmp(first_addr, hop->addr, sizeof(first_addr)) == 0) {
-        printf("  %.3f ms", get_elapsed_time(*hop));
-      }
-    }
+  if (hop->ttl != last_ttl) {
+    printf("\n%2d ", hop->ttl);
+    last_ttl = hop->ttl;
   }
-  printf("\n");
+
+  if (!hop->received) {
+    printf(" *");
+  } else {
+    if (ft_strncmp(last_addr, hop->addr, INET_ADDRSTRLEN) != 0) {
+      printf(" %s", hop->addr);
+      ft_memcpy(last_addr, hop->addr, INET_ADDRSTRLEN);
+    }
+    printf(" (%.3f ms)", get_elapsed_time(*hop));
+  }
 }

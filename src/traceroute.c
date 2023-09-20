@@ -31,16 +31,11 @@ int traceroute(t_route *route) {
     return 1;
   }
 
-  printf("traceroute to %s (%s), %u hops max, %zu byte packets\n", route->host,
+  printf("traceroute to %s (%s), %u hops max, %zu byte packets", route->host,
          route->addr, hops, packet_size);
-  for (route->ttl = 1; route->ttl <= hops; route->ttl++) {
-    if (send_packets(route) != 0) {
-      return 1;
-    }
-
-    if (receive_packets(route) != 0) {
-      return 1;
-    }
+  for (unsigned int i = 0; i < hops; i++) {
+    send_packet(route, i);
+    receive_packets(route, i);
   }
 
   return 0;

@@ -33,6 +33,7 @@ typedef struct s_hop {
   struct timeval start;
   struct timeval end;
   char addr[INET_ADDRSTRLEN];
+  unsigned short ttl;
 } t_hop;
 
 typedef struct s_route {
@@ -59,15 +60,15 @@ extern t_route *g_route;
 int traceroute(t_route *route);
 int address_lookup(t_route *route);
 int init_icmp_socket(t_route *route);
-int init_udp_socket(t_route *route);
+int init_udp_socket(unsigned short ttl);
 t_packet new_packet();
 void interrupt_handler(int sig);
 void free_route(t_route *route);
-int send_packets(t_route *route);
-int receive_packets(t_route *route);
+int send_packet(t_route *route, unsigned int i);
+int receive_packets(t_route *route, unsigned int i);
 float time_diff_ms(struct timeval *start, struct timeval *end);
 
-void print_hops(t_route *route, t_hop *hops);
+void print_hop(t_hop *hop);
 
 size_t ft_strlen(const char *s);
 void *ft_memset(void *b, int c, size_t len);
