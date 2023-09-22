@@ -18,29 +18,17 @@ static struct sockaddr_in probe_addr(t_route *route, unsigned int i) {
   return addr;
 }
 
-int send_packet(t_route *route, unsigned int i) {
-  t_hop *hop;
+int send_packet(t_route *route, unsigned int seq, unsigned short ttl) {
   int udp_sockfd;
   struct sockaddr_in dest;
-  unsigned short ttl;
-
-  ttl = (i / 3) + 1;
-  hop = &route->hops[i];
-  hop->sent = false;
-  hop->received = false;
-  hop->ttl = ttl;
 
   udp_sockfd = init_udp_socket(ttl);
-  dest = probe_addr(route, i);
+  dest = probe_addr(route, seq - 1);
   if (sendto(udp_sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&dest,
              sizeof(dest)) == 0 < 0) {
     return -1;
   }
 
-  // Save the time when the packet was sent
-  hop->sent = true;
-  gettimeofday(&hop->start, NULL);
-
-  close(route->udp_sockfd);
+  close(udp_sockfd);
   return 0;
 }

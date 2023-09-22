@@ -20,20 +20,14 @@
 
 #define DEFAULT_TTL 64
 #define DEFAULT_MAX_HOPS 30
-#define DEFAULT_TIMEOUT 5
+#define DEFAULT_TIMEOUT 1
 #define DEFAULT_UDP_PORT 33434
 #define DEFAULT_UDP_PAYLOAD_SIZE 32
 #define DEFAULT_UDP_PACKET_SIZE 60
 
-#define PORT_INDEX(i) (i - DEFAULT_UDP_PORT)
-
 typedef struct s_hop {
-  bool sent;
-  bool received;
-  struct timeval start;
-  struct timeval end;
-  char addr[INET_ADDRSTRLEN];
-  unsigned short ttl;
+  struct sockaddr_in from;
+  struct icmp ihp;
 } t_hop;
 
 typedef struct s_route {
@@ -41,14 +35,7 @@ typedef struct s_route {
   unsigned int options;
   struct addrinfo *addrinfo;
   char addr[INET_ADDRSTRLEN];
-
-  int udp_sockfd;
   int icmp_sockfd;
-  unsigned short udp_port;
-
-  t_hop hops[PROBE_MAX_PACKETS];
-
-  unsigned int ttl;
 } t_route;
 
 typedef struct s_packet {
@@ -64,8 +51,8 @@ int init_udp_socket(unsigned short ttl);
 t_packet new_packet();
 void interrupt_handler(int sig);
 void free_route(t_route *route);
-int send_packet(t_route *route, unsigned int i);
-int receive_packets(t_route *route, unsigned int i);
+int send_packet(t_route *route, unsigned int seq, unsigned short ttl);
+ssize_t receive_packet(t_route *route, t_hop *hop);
 float time_diff_ms(struct timeval *start, struct timeval *end);
 
 void print_hop(t_hop *hop);
