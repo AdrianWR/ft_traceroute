@@ -12,8 +12,7 @@ static struct sockaddr_in probe_addr(t_route *route, unsigned int i) {
 
   addr.sin_family = AF_INET;
   addr.sin_port = htons(DEFAULT_UDP_PORT + i);
-  addr.sin_addr.s_addr =
-      ((struct sockaddr_in *)route->addrinfo->ai_addr)->sin_addr.s_addr;
+  addr.sin_addr.s_addr = route->addr_in.sin_addr.s_addr;
 
   return addr;
 }

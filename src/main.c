@@ -24,12 +24,13 @@ int help() {
 }
 
 int main(int argc, char *argv[]) {
+  int ret;
 
-  if (!(g_route = malloc(sizeof(t_route)))) {
+  if (!(g_route = malloc(sizeof(*g_route)))) {
     fprintf(stderr, "traceroute: malloc failed\n");
     return 1;
   }
-  ft_memset(g_route, 0, sizeof(t_route));
+  ft_memset(g_route, 0, sizeof(*g_route));
 
   if (parse_traceroute(argc, argv, g_route) != 0) {
     fprintf(stderr, "traceroute: parse failed\n");
@@ -39,5 +40,7 @@ int main(int argc, char *argv[]) {
   if (g_route->options & HELP_OPTION || argc == 1)
     return help();
 
-  return (traceroute(g_route));
+  ret = traceroute(g_route);
+  free(g_route);
+  return (ret);
 }

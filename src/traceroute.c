@@ -52,43 +52,42 @@ static int fetch_packet(t_hop hop, unsigned int *got_there,
 }
 
 int traceroute(t_route *route) {
-  int max_ttl = DEFAULT_MAX_HOPS;
   unsigned int seq = 0;
-  unsigned int nprobes = 3;
   unsigned long last_addr = 0;
   unsigned int got_there = 0;
   unsigned int unreachable = 0;
+  int cc;
+  t_hop hop;
+
+  route->max_ttl = DEFAULT_MAX_HOPS;
+  route->nprobes = DEFAULT_NPROBES;
 
   signal(SIGINT, interrupt_handler);
 
   if (init_icmp_socket(route) != 0) {
-    return 1;
+    return (1);
   }
 
   if (address_lookup(route) != 0) {
     fprintf(stderr, "Cannot handle \"host\" cmdline arg `%s\'\n", route->host);
-    return 1;
+    return (1);
   }
 
   printf("traceroute to %s (%s), %u hops max, %zu byte packets\n", route->host,
-         route->addr, max_ttl, packet_size);
-  for (int ttl = 1; ttl <= max_ttl; ++ttl) {
-    struct timeval t1, t2;
-    int cc;
-    t_hop hop;
-
+         inet_ntoa(route->addr_in.sin_addr), route->max_ttl, packet_size);
+  for (int ttl = 1; ttl <= route->max_ttl; ++ttl) {
     printf("%2d ", ttl);
-    for (unsigned int probe = 0; probe < nprobes; probe++) {
-      gettimeofday(&t1, NULL);
+    for (unsigned int probe = 0; probe < route->nprobes; probe++) {
+      gettimeofday(&hop.t1, NULL);
       send_packet(route, ++seq, ttl);
       while ((cc = receive_packet(route, &hop) > 0)) {
-        gettimeofday(&t2, NULL);
+        gettimeofday(&hop.t2, NULL);
         if (hop.from.sin_addr.s_addr != last_addr) {
-          printf("%s (%s) ", inet_ntoa(hop.from.sin_addr),
+          printf("%s (%s) ", reverse_dns_lookup(&hop.from, hop.fromlen),
                  inet_ntoa(hop.from.sin_addr));
           last_addr = hop.from.sin_addr.s_addr;
         }
-        printf("%.3f ms ", time_diff_ms(&t1, &t2));
+        printf("%.3f ms ", time_diff_ms(&hop.t1, &hop.t2));
         fetch_packet(hop, &got_there, &unreachable);
         break;
       }
@@ -96,9 +95,8 @@ int traceroute(t_route *route) {
         printf("* ");
     }
     printf("\n");
-    if (got_there || unreachable >= nprobes - 1)
-      exit(0);
+    if (got_there || unreachable >= route->nprobes - 1)
+      ttl = route->max_ttl;
   }
-
-  return 0;
+  return (0);
 }

@@ -4,7 +4,4 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-void free_route(t_route *route) {
-  freeaddrinfo(route->addrinfo);
-  free(route);
-}
+void free_route(t_route *route) { free(route); }

@@ -1,14 +1,14 @@
+#include "traceroute.h"
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 void interrupt_handler(int sig) {
 
-  (void)sig;
-
-  if (sig == SIGINT) {
-    printf("\n");
+  switch (sig) {
+  case SIGINT:
+    free(g_route);
+    exit(0);
+  case SIGQUIT:
+    exit(0);
   }
-
-  exit(sig);
 }

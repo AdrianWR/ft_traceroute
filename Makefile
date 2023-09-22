@@ -3,7 +3,7 @@ NAME = ft_traceroute
 CC = clang
 RM = rm -f
 
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror
 CPPFLAGS = -Iinclude
 
 LDFLAGS =

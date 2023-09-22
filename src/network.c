@@ -8,27 +8,37 @@
 int address_lookup(t_route *route) {
   int status;
   struct addrinfo hints;
-  struct sockaddr_in *ipv4;
-  char *addr;
+  struct addrinfo *res;
+  int ai_family;
 
   hints.ai_family = AF_INET;
   hints.ai_socktype = 0;
   hints.ai_protocol = 0;
   hints.ai_flags = AI_CANONNAME;
 
-  if ((status = getaddrinfo(route->host, NULL, &hints, &route->addrinfo))) {
+  if ((status = getaddrinfo(route->host, NULL, &hints, &res))) {
     fprintf(stderr, "%s: %s\n", route->host, gai_strerror(status));
-    return 1;
+    return (1);
   }
+  route->addr_in = *(struct sockaddr_in *)(res->ai_addr);
+  ai_family = res->ai_family;
+  freeaddrinfo(res);
 
-  if (route->addrinfo->ai_family == AF_INET) {
-    ipv4 = (struct sockaddr_in *)(route->addrinfo)->ai_addr;
-    addr = inet_ntoa(ipv4->sin_addr);
-    *(char *)ft_mempcpy(route->addr, addr, ft_strlen(addr)) = '\0';
-  } else {
+  if (ai_family != AF_INET) {
     fprintf(stderr, "traceroute: address family not supported\n");
-    return 1;
+    return (1);
   }
 
-  return 0;
+  return (0);
+}
+
+const char *reverse_dns_lookup(struct sockaddr_in *addr, socklen_t addrlen) {
+  static char host[NI_MAXHOST];
+  int flags = 0;
+
+  if (getnameinfo((struct sockaddr *)addr, addrlen, host, NI_MAXHOST, NULL, 0,
+                  flags) == 0) {
+    return (host);
+  }
+  return (NULL);
 }
