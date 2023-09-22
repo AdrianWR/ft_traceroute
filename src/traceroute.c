@@ -16,15 +16,50 @@
 static size_t packet_size =
     sizeof(struct iphdr) + sizeof(struct icmphdr) + PROBE_PACKET_SIZE;
 
+static int fetch_packet(t_hop hop, unsigned int *got_there,
+                        unsigned int *unreachable) {
+  if (hop.ihp.icmp_type == ICMP_TIME_EXCEEDED &&
+      hop.ihp.icmp_code == ICMP_TIMXCEED_INTRANS)
+    return 1;
+
+  switch (hop.ihp.icmp_code) {
+  case ICMP_UNREACH_PORT:
+    (*got_there)++;
+    return 1;
+  case ICMP_UNREACH_NET:
+    (*unreachable)++;
+    printf("!N ");
+    return 1;
+  case ICMP_UNREACH_HOST:
+    (*unreachable)++;
+    printf("!H ");
+    return 1;
+  case ICMP_UNREACH_PROTOCOL:
+    (*got_there)++;
+    printf("!P ");
+    return 1;
+  case ICMP_UNREACH_NEEDFRAG:
+    (*unreachable)++;
+    printf("!F ");
+    return 1;
+  case ICMP_UNREACH_SRCFAIL:
+    (*unreachable)++;
+    printf("!S ");
+    return 1;
+  }
+
+  return 0;
+}
+
 int traceroute(t_route *route) {
-  int max_ttl;
-
-  signal(SIGINT, interrupt_handler);
-
-  max_ttl = DEFAULT_MAX_HOPS;
-
+  int max_ttl = DEFAULT_MAX_HOPS;
   unsigned int seq = 0;
   unsigned int nprobes = 3;
+  unsigned long last_addr = 0;
+  unsigned int got_there = 0;
+  unsigned int unreachable = 0;
+
+  signal(SIGINT, interrupt_handler);
 
   if (init_icmp_socket(route) != 0) {
     return 1;
@@ -35,16 +70,12 @@ int traceroute(t_route *route) {
     return 1;
   }
 
-  unsigned long last_addr = 0;
-
   printf("traceroute to %s (%s), %u hops max, %zu byte packets\n", route->host,
          route->addr, max_ttl, packet_size);
   for (int ttl = 1; ttl <= max_ttl; ++ttl) {
     struct timeval t1, t2;
     int cc;
     t_hop hop;
-    unsigned int got_there = 0;
-    unsigned int unreachable = 0;
 
     printf("%2d ", ttl);
     for (unsigned int probe = 0; probe < nprobes; probe++) {
@@ -58,34 +89,7 @@ int traceroute(t_route *route) {
           last_addr = hop.from.sin_addr.s_addr;
         }
         printf("%.3f ms ", time_diff_ms(&t1, &t2));
-        if (hop.ihp.icmp_type == ICMP_TIME_EXCEEDED)
-          break;
-
-        switch (hop.ihp.icmp_code) {
-        case ICMP_UNREACH_PORT:
-          got_there++;
-          break;
-        case ICMP_UNREACH_NET:
-          unreachable++;
-          printf("!N ");
-          break;
-        case ICMP_UNREACH_HOST:
-          unreachable++;
-          printf("!H ");
-          break;
-        case ICMP_UNREACH_PROTOCOL:
-          got_there++;
-          printf("!P ");
-          break;
-        case ICMP_UNREACH_NEEDFRAG:
-          unreachable++;
-          printf("!F ");
-          break;
-        case ICMP_UNREACH_SRCFAIL:
-          unreachable++;
-          printf("!S ");
-          break;
-        }
+        fetch_packet(hop, &got_there, &unreachable);
         break;
       }
       if (cc == 0)

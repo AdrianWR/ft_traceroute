@@ -8,26 +8,6 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 
-// static int get_icmp_type(char *packet) {
-//  struct icmphdr *icmp_header;
-//
-//  icmp_header = (struct icmphdr *)(packet + sizeof(struct iphdr));
-//
-//  return icmp_header->type;
-//}
-//
-// static unsigned int get_destination_port(char *packet) {
-//  unsigned char *payload;
-//  struct udphdr *udp_header;
-//
-//  payload =
-//      (unsigned char *)(packet + sizeof(struct iphdr) + sizeof(struct
-//      icmphdr));
-//  udp_header = (struct udphdr *)(payload + sizeof(struct iphdr));
-//
-//  return ntohs(udp_header->dest);
-//}
-
 ssize_t receive_packet(t_route *route, t_hop *hop) {
   int retval;
   fd_set readfds;
@@ -56,7 +36,6 @@ ssize_t receive_packet(t_route *route, t_hop *hop) {
       return 1;
     }
 
-    // hop->ihp = (struct icmp *)(buf + sizeof(struct iphdr));
     ft_memcpy(&hop->ihp, buf + sizeof(struct iphdr), sizeof(struct icmphdr));
   }
 
