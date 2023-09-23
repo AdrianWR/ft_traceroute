@@ -63,6 +63,12 @@ int traceroute(t_route *route) {
     return (1);
   }
 
+  route->icmp_sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+  if (route->icmp_sockfd < 0) {
+    fprintf(stderr, "socket error: %s\n", strerror(errno));
+    return (1);
+  }
+
   printf("traceroute to %s (%s), %u hops max, %zu byte packets\n", route->host,
          inet_ntoa(route->addr_in.sin_addr), route->max_ttl, packet_size);
   for (int ttl = 1; ttl <= route->max_ttl; ++ttl) {
@@ -88,5 +94,6 @@ int traceroute(t_route *route) {
     if (got_there || unreachable >= route->nprobes - 1)
       ttl = route->max_ttl;
   }
+  close(route->icmp_sockfd);
   return (0);
 }

@@ -35,6 +35,7 @@ typedef struct s_hop {
 typedef struct s_route {
   const char *host;
   struct sockaddr_in addr_in;
+  int icmp_sockfd;
 
   unsigned short max_ttl;
   unsigned int nprobes;
