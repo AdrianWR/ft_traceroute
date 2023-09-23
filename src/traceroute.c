@@ -1,5 +1,4 @@
 #include "traceroute.h"
-
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -20,53 +19,44 @@ static int fetch_packet(t_hop hop, unsigned int *got_there,
                         unsigned int *unreachable) {
   if (hop.ihp.icmp_type == ICMP_TIME_EXCEEDED &&
       hop.ihp.icmp_code == ICMP_TIMXCEED_INTRANS)
-    return 1;
+    return (1);
 
   switch (hop.ihp.icmp_code) {
   case ICMP_UNREACH_PORT:
     (*got_there)++;
-    return 1;
+    return (1);
   case ICMP_UNREACH_NET:
     (*unreachable)++;
     printf("!N ");
-    return 1;
+    return (1);
   case ICMP_UNREACH_HOST:
     (*unreachable)++;
     printf("!H ");
-    return 1;
+    return (1);
   case ICMP_UNREACH_PROTOCOL:
     (*got_there)++;
     printf("!P ");
-    return 1;
+    return (1);
   case ICMP_UNREACH_NEEDFRAG:
     (*unreachable)++;
     printf("!F ");
-    return 1;
+    return (1);
   case ICMP_UNREACH_SRCFAIL:
     (*unreachable)++;
     printf("!S ");
-    return 1;
+    return (1);
   }
 
-  return 0;
+  return (0);
 }
 
 int traceroute(t_route *route) {
-  unsigned int seq = 0;
   unsigned long last_addr = 0;
   unsigned int got_there = 0;
   unsigned int unreachable = 0;
+
   int cc;
   t_hop hop;
-
-  route->max_ttl = DEFAULT_MAX_HOPS;
-  route->nprobes = DEFAULT_NPROBES;
-
-  signal(SIGINT, interrupt_handler);
-
-  if (init_icmp_socket(route) != 0) {
-    return (1);
-  }
 
   if (address_lookup(route) != 0) {
     fprintf(stderr, "Cannot handle \"host\" cmdline arg `%s\'\n", route->host);
@@ -79,7 +69,7 @@ int traceroute(t_route *route) {
     printf("%2d ", ttl);
     for (unsigned int probe = 0; probe < route->nprobes; probe++) {
       gettimeofday(&hop.t1, NULL);
-      send_packet(route, ++seq, ttl);
+      send_packet(route, ttl);
       while ((cc = receive_packet(route, &hop) > 0)) {
         gettimeofday(&hop.t2, NULL);
         if (hop.from.sin_addr.s_addr != last_addr) {

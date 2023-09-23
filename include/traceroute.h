@@ -15,15 +15,12 @@
 
 #define PROBE_PACKET "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
 #define PROBE_PACKET_SIZE 32
-#define PROBE_PACKET_COUNT 3
-#define PROBE_MAX_PACKETS 90
 
 #define DEFAULT_TTL 64
 #define DEFAULT_MAX_HOPS 30
 #define DEFAULT_NPROBES 3
-#define DEFAULT_TIMEOUT 1
+#define DEFAULT_WAITTIME 3
 #define DEFAULT_UDP_PORT 33434
-#define DEFAULT_UDP_PAYLOAD_SIZE 32
 #define DEFAULT_UDP_PACKET_SIZE 60
 
 typedef struct s_hop {
@@ -37,29 +34,25 @@ typedef struct s_hop {
 
 typedef struct s_route {
   const char *host;
-  unsigned int options;
   struct sockaddr_in addr_in;
-  int icmp_sockfd;
 
   unsigned short max_ttl;
   unsigned int nprobes;
+  unsigned int waittime;
+  unsigned short udp_port;
 } t_route;
 
 typedef struct s_packet {
   char payload[PROBE_PACKET_SIZE];
 } t_packet;
 
-extern t_route *g_route;
-
 int traceroute(t_route *route);
 int address_lookup(t_route *route);
 const char *reverse_dns_lookup(struct sockaddr_in *addr_in, socklen_t fromlen);
-int init_icmp_socket(t_route *route);
+int init_icmp_socket();
 int init_udp_socket(unsigned short ttl);
-t_packet new_packet();
 void interrupt_handler(int sig);
-void free_route(t_route *route);
-int send_packet(t_route *route, unsigned int seq, unsigned short ttl);
+int send_packet(t_route *route, unsigned short ttl);
 ssize_t receive_packet(t_route *route, t_hop *hop);
 float time_diff_ms(struct timeval *start, struct timeval *end);
 

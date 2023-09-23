@@ -49,15 +49,18 @@ int init_udp_socket(unsigned short ttl) {
   return udp_sockfd;
 }
 
-int init_icmp_socket(t_route *route) {
-  int icmp_sockfd;
+int init_icmp_socket() {
+  static int icmp_sockfd;
+
+  if (icmp_sockfd > 0) {
+    return icmp_sockfd;
+  }
 
   // Create IPv4 socket to receive ICMP packets
   if ((icmp_sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
     fprintf(stderr, "traceroute: icmp socket: %s\n", strerror(errno));
-    return 1;
+    return -1;
   }
 
-  route->icmp_sockfd = icmp_sockfd;
-  return 0;
+  return icmp_sockfd;
 }
