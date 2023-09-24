@@ -56,6 +56,7 @@ Further information about the command can be found by running `./ft_traceroute -
 
 ## References
 
+- [RFC 768 - User Datagram Protocol](https://tools.ietf.org/html/rfc768)
 - [RFC 792 - Internet Control Message Protocol](https://tools.ietf.org/html/rfc792)
 - [Parsing Program Options with argp](https://www.gnu.org/software/libc/manual/html_node/Argp.html)
 - [traceroute.c](https://opensource.apple.com/source/network_cmds/network_cmds-77/traceroute.tproj/traceroute.c.auto.html)
