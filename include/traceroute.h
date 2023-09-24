@@ -56,11 +56,18 @@ void interrupt_handler(int sig);
 int send_packet(t_route *route, unsigned short ttl);
 ssize_t receive_packet(t_route *route, t_hop *hop);
 float time_diff_ms(struct timeval *start, struct timeval *end);
+int validate_nprobes(const char *arg, unsigned int *nprobes);
+int validate_waittime(const char *arg, unsigned int *waittime);
+int validate_udp_port(const char *arg, unsigned short *udp_port);
+int validate_max_ttl(const char *arg, unsigned short *max_ttl);
 
 size_t ft_strlen(const char *s);
 void *ft_memset(void *b, int c, size_t len);
 int ft_strncmp(const char *s1, const char *s2, size_t n);
 void *ft_memcpy(void *dst, const void *src, size_t n);
 void *ft_mempcpy(void *dst, const void *src, size_t n);
+int ft_isdigit(int c);
+int ft_isspace(int c);
+int ft_atoi(const char *str);
 
 #endif

@@ -23,16 +23,20 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
   struct s_route *route = state->input;
   switch (key) {
   case 'm':
-    route->max_ttl = atoi(arg);
+    if (validate_max_ttl(arg, &route->max_ttl) == -1)
+      return (2);
     break;
   case 'q':
-    route->nprobes = atoi(arg);
+    if (validate_nprobes(arg, &route->nprobes) == -1)
+      return (2);
     break;
   case 'w':
-    route->waittime = atoi(arg);
+    if (validate_waittime(arg, &route->waittime) == -1)
+      return (2);
     break;
   case 'p':
-    route->udp_port = atoi(arg);
+    if (validate_udp_port(arg, &route->udp_port) == -1)
+      return (2);
     break;
   case ARGP_KEY_ARG:
     if (state->arg_num >= 1)
@@ -44,9 +48,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
       argp_usage(state);
     break;
   default:
-    return ARGP_ERR_UNKNOWN;
+    return (ARGP_ERR_UNKNOWN);
   }
-  return 0;
+  return (0);
 }
 
 static struct argp argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
@@ -60,7 +64,8 @@ int main(int argc, char *argv[]) {
   route.waittime = DEFAULT_WAITTIME;
   route.udp_port = DEFAULT_UDP_PORT;
 
-  argp_parse(&argp, argc, argv, 0, 0, &route);
+  if ((ret = argp_parse(&argp, argc, argv, 0, 0, &route) != 0))
+    return (ret);
 
   ret = traceroute(&route);
   return (ret);
