@@ -13,7 +13,7 @@ static char doc[] =
 static char args_doc[] = "HOST";
 
 static struct argp_option options[] = {
-    {"max-hop", 'm', "MAX_HOPS", 0, "Set maximal hop count (default: 64)", 0},
+    {"max-hop", 'm', "MAX_HOPS", 0, "Set maximal hop count (default: 30)", 0},
     {"tries", 'q', "NUM", 0, "Send NUM probe packets per hop (default: 3)", 0},
     {"wait", 'w', "NUM", 0, "Wait NUM seconds for response (default: 3)", 0},
     {"port", 'p', "PORT", 0, "Use destination PORT port (default: 33434)", 0},
